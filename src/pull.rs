@@ -5,7 +5,7 @@
 use anyhow::{anyhow, bail, Context, Result};
 use futures_util::future;
 use oci_distribution::manifest::{OciDescriptor, OciImageManifest};
-use oci_distribution::{secrets::RegistryAuth, Client, Reference};
+use oci_distribution::{secrets::RegistryAuth, Client, client::ClientConfig, Reference};
 use sha2::Digest;
 use std::convert::TryFrom;
 use std::fs;
@@ -51,7 +51,10 @@ impl<'a> PullClient<'a> {
         data_dir: &Path,
         auth: &'a RegistryAuth,
     ) -> Result<PullClient<'a>> {
-        let client = Client::default();
+        let mut config = ClientConfig::default();
+        // Ignore tls errors for testing purpose
+        config.accept_invalid_certificates = true;
+        let client = Client::new(config);
 
         Ok(PullClient {
             client,
